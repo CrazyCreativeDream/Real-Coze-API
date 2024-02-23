@@ -53,7 +53,7 @@ npm run command
 npm run server
 ```
 
-请求方式如下，在http模式下服务端不会保存聊天历史数据：
+请求方式如下，在http模式下服务端不会保存聊天历史数据，你需要将ChatHistory整个传递到后端：
 
 ```javascript
 await fetch("http://localhost:8080/", {
@@ -121,6 +121,9 @@ await fetch("/?stream=true", {
     }
 })
 ```
+
+> listener函数将会在read到一个完整的json后输出，输出结果和非Stream返回结果结构相同。当`continue`为`false`时，`content`内容可能不完整。
+
 
 ## 代理
 
