@@ -37,6 +37,8 @@ https://www.coze.com/space/{SPACE_ID}/bot/{BOT_ID}
 在当前界面打开F12控制台，切换`Application`选项卡，找到`Cookies`，找到`sessionid`，复制其value。这就是你的`SESSION_ID`。
 
 > 什么？为什么不直接用`document.cookie`获取？因为Coze把`SessionID`放在了`.coze.com`域名下，而在`www.coze.com`下是无法通过js获取的。
+>
+> `SessionID`默认过期时长为60天，未测试实际时长。
 
 将`SPACE_ID`、`BOT_ID`和`SESSION_ID`填入`.env`文件即可。
 
