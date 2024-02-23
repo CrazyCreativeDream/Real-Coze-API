@@ -6,7 +6,7 @@
 
 ## 项目原理
 
-通过Coze原有PlayGround的API，逆向前端脚本，模拟请求，以实现取得Coze的真实数据。
+通过Coze原有PlayGround的API，逆向前端脚本，模拟请求，以实现将Coze的API暴露出来的功能。
 
 与[deanxv/coze-discord-proxy](https://github.com/deanxv/coze-discord-proxy)原理完全不同的是，本项目的接口是直接模拟前端请求API访问Bot，访问策略更接近原生。
 
