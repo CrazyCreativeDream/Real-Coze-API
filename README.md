@@ -11,8 +11,10 @@
 与[deanxv/coze-discord-proxy](https://github.com/deanxv/coze-discord-proxy)原理完全不同的是，本项目的接口是直接模拟前端请求API访问Bot，访问策略更接近原生。
 
 > 说白了就是双机器人策略不太优雅，不如直接调用api访问。
-
-如果你想用其他类似图生图之类的功能可以用CozeDiscordProxy。
+>
+> 该项目也不会做其他的非LLM有关的的功能，未来开发方向用于完善原有的`workflow`和`plugin`功能，以及在`vercel`等无服务器平台部署
+> 
+> 如果你想用其他类似文生图之类的功能可以用CozeDiscordProxy，该项目并非开箱可用。
 
 > 当前没写Vercel版本的，得咕一下
 > 
