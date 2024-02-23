@@ -8,9 +8,17 @@
 
 通过Coze原有PlayGround的API，逆向前端脚本，模拟请求，以实现取得Coze的真实数据。
 
+与[deanxv/coze-discord-proxy](https://github.com/deanxv/coze-discord-proxy)原理完全不同的是，本项目的接口是直接模拟前端请求API访问Bot，访问策略更接近原生。
+
+> 说白了就是双机器人策略不太优雅，不如直接调用api访问。
+
+如果你想用其他类似图生图之类的功能可以用CozeDiscordProxy。
+
 > 当前没写Vercel版本的，得咕一下
 > 
 > 花了一下午逆向前端，我不得不吐槽coze前端水平写的真的依托答辩，我故意保留了部分Coze的前端代码，好让其他人意识到这是来自Coze的API（逃
+>
+> 前端逆向了`GenerateAccessKeybyUUID`和`randomDeviceID`两个主要函数。
 
 ## 使用方法
 
