@@ -1,13 +1,26 @@
 # Coze-Real-API
 
 > 高性能的真·Coze API
+>
+> **ATRI -My Dear Moments-**
 
 ## 项目原理
 
-通过Coze原有PlayGround的API，逆向前端脚本，模拟请求，以实现取得Coze的真实数据。
+通过Coze原有PlayGround的API，逆向前端脚本，模拟请求，以实现将Coze的API暴露出来的功能。
+
+与[deanxv/coze-discord-proxy](https://github.com/deanxv/coze-discord-proxy)原理完全不同的是，本项目的接口是直接模拟前端请求API访问Bot，访问策略更接近原生。
+
+> 说白了就是双机器人策略不太优雅，不如直接调用api访问。
+>
+> 该项目也不会做其他的非LLM有关的的功能，未来开发方向用于完善原有的`workflow`和`plugin`功能，以及在`vercel`等无服务器平台部署
+> 
+> 如果你想用其他类似文生图之类的功能可以用CozeDiscordProxy，该项目并非开箱可用。
 
 > 当前没写Vercel版本的，得咕一下
+> 
 > 花了一下午逆向前端，我不得不吐槽coze前端水平写的真的依托答辩，我故意保留了部分Coze的前端代码，好让其他人意识到这是来自Coze的API（逃
+>
+> 前端逆向了`GenerateAccessKeybyUUID`和`randomDeviceID`两个主要函数。
 
 ## 使用方法
 
@@ -24,6 +37,8 @@ https://www.coze.com/space/{SPACE_ID}/bot/{BOT_ID}
 在当前界面打开F12控制台，切换`Application`选项卡，找到`Cookies`，找到`sessionid`，复制其value。这就是你的`SESSION_ID`。
 
 > 什么？为什么不直接用`document.cookie`获取？因为Coze把`SessionID`放在了`.coze.com`域名下，而在`www.coze.com`下是无法通过js获取的。
+>
+> `SessionID`默认过期时长为60天，未测试实际时长。
 
 将`SPACE_ID`、`BOT_ID`和`SESSION_ID`填入`.env`文件即可。
 
@@ -37,6 +52,9 @@ https://www.coze.com/space/{SPACE_ID}/bot/{BOT_ID}
 npm run command
 ```
 
+![image](https://github.com/CrazyCreativeDream/Real-Coze-API/assets/53730587/8442f278-f8f1-4dde-8aa3-2fe6ec4ac75b)
+
+
 #### Server模式
 
 通过Server模式运行，可以通过HTTP请求获取数据。
@@ -47,7 +65,7 @@ npm run command
 npm run server
 ```
 
-请求方式如下，在http模式下服务端不会保存聊天历史数据：
+请求方式如下，在http模式下服务端不会保存聊天历史数据，你需要将ChatHistory整个传递到后端：
 
 ```javascript
 await fetch("http://localhost:8080/", {
@@ -116,6 +134,9 @@ await fetch("/?stream=true", {
 })
 ```
 
+> listener函数将会在read到一个完整的json后输出，输出结果和非Stream返回结果结构相同。当`continue`为`false`时，`content`内容可能不完整。
+
+
 ## 代理
 
 通过修改`.env`文件中的`proxy`变量，可以设置代理。
@@ -125,3 +146,7 @@ await fetch("/?stream=true", {
 > 实测http代理和node-fetch不兼容，强制使用会出现多次跳转的问题。
 > 
 > 代理只会处理CozeAPI的请求，不会代理CozeWebsocket的请求。
+
+## 预设
+
+修改根目录下`prompt.txt`即可修改预设，默认文本来自[Abudu](https://github.com/am-abudu)的Atri - 亚托莉预设
