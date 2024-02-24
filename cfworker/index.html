@@ -1,0 +1,91 @@
+<span id="ChatHistory"></span>
+</br>
+<span><input type="text" id="ChatInput" /><button id="ChatSend">发送</button></span>
+<!-- <script src="https://registry.npmmirror.com/marked/12.0.0/files/marked.min.js"></script> -->
+<script>
+    function RealCozeAPIClient(url) {
+        this.ws = new WebSocket(url)
+        this.ready = false
+        this.callbacks = {}
+        this.ChatHistory = [
+            {
+                "role": 2,
+                "content": "Atri，你认得我吗"
+            },
+            {
+                "role": 1,
+                "content": "夏生先生！当然认得了！有什么事吗？夜深了，这么晚还不休息？"
+            }
+        ]
+        this.GnerateUUID = () => {
+            return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0,
+                    v = c == "x" ? r : (r & 3 | 8);
+                return v.toString(16);
+            });
+        }
+        this.addChatListener = (uuid, callback) => {
+            this.callbacks[uuid] = callback
+        }
+        this.mainListener = (data) => {
+            if (!data.success && data.errmsg.match(/regional restrictions/)) {
+                try { this.ws.close() } catch (e) { }
+                //触发了Worker诡异的出口问题，等待一秒后重连
+                setTimeout(() => {
+                    const that = {}
+                    that.onopen = this.ws.onopen
+                    that.onmessage = this.ws.onmessage
+                    this.ws = new WebSocket(url)
+                    this.ws.onopen = that.onopen
+                    this.ws.onmessage = that.onmessage
+                }, 2000)
+            }
+        }
+        this.ws.onopen = () => { this.ready = true }
+        this.ws.onmessage = (e) => {
+            const data = JSON.parse(e.data)
+            if (data.uuid === "main-thread") return this.mainListener(data)
+            if (typeof this.callbacks[data.uuid] === "function") this.callbacks[data.uuid](data.data)
+            if (!data.data.continue) {
+                delete this.callbacks[data.uuid]
+                this.ChatHistory.push({ role: 2, content: data.data.content })
+            }
+        }
+        this.send = (content, callback) => {
+            this.ChatHistory.push({ role: 1, content })
+            const uuid = this.GnerateUUID()
+            this.addChatListener(uuid, callback)
+            this.ws.send(JSON.stringify({
+                uuid,
+                data: this.ChatHistory
+            }))
+        }
+    }
+
+    const BackendAPI = new URL(window.location.href)
+    BackendAPI = BackendAPI.url.replace(/^https:/, "wss:")
+    const RealCozeAPI = new RealCozeAPIClient(BackendAPI)
+    document.getElementById("ChatSend").addEventListener("click", () => {
+        const $H = document.getElementById("ChatHistory")
+        const $B = document.getElementById("ChatSend")
+        const $I = document.getElementById("ChatInput")
+        $B.disabled = true
+        $I.disabled = true
+        const inputContent = $I.value
+        const $me = document.createElement("p")
+        $me.innerText = `Me> ${inputContent}`
+        $H.appendChild($me)
+        const $Atri = document.createElement("span")
+        $H.appendChild($Atri)
+        RealCozeAPI.send(inputContent, (data) => {
+            console.log(data)
+            $Atri.innerText = `Atri> ${data.content}`
+            if (!data.continue) {
+                $B.disabled = false
+                $I.disabled = false
+                $I.value = ""
+            }
+        })
+    })
+
+</script>

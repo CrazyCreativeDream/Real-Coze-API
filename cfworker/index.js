@@ -11,7 +11,14 @@ const CozeAPI = {
 
 const handleRequest = async (request) => {
     const upgradeHeader = request.headers.get('Upgrade');
-    if (!upgradeHeader || upgradeHeader !== 'websocket') return new Response('Expected Upgrade: websocket', { status: 426 });
+    if (!upgradeHeader || upgradeHeader !== 'websocket') {
+        //return new Response('Expected Upgrade: websocket', { status: 426 });
+        return new Response(await fetch('https://raw.githubusercontent.com/CrazyCreativeDream/Real-Coze-API/main/cfworker/index.html').then(res => res.text()), {
+            headers: {
+                "content-type": "text/html; charset=utf-8"
+            }
+        })
+    }
 
     const webSocketPair = new WebSocketPair();
     const [client, server] = Object.values(webSocketPair);

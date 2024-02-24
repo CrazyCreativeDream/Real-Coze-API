@@ -119,9 +119,14 @@ function RealCozeAPIClient(url) {
         if (!data.success && data.errmsg.match(/regional restrictions/)) {
             try { this.ws.close() } catch (e) { }
             //触发了Worker诡异的出口问题，等待一秒后重连
-            Settimeout(() => {
+            setTimeout(() => {
+                const that = {}
+                that.onopen = this.ws.onopen
+                that.onmessage = this.ws.onmessage
                 this.ws = new WebSocket(url)
-            }, 1000)
+                this.ws.onopen = that.onopen
+                this.ws.onmessage = that.onmessage
+            }, 2000)
         }
     }
     this.ws.onopen = () => { this.ready = true }
