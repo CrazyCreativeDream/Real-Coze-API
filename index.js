@@ -36,10 +36,11 @@ if (!process.env.session_id) {
     process.exit(1);
 }
 let apiProxy = null;
-if (!!process.env.proxy && !process.env.proxy.startsWith('socks')) {
-    console.error('[CozeRealAPI MAIN]proxy should be a socks proxy,http proxy will cause redirection issues');
-    process.exit(1);
-} else {
+if (!!process.env.proxy) {
+    if (!process.env.proxy.startsWith('socks')) {
+        console.error('[CozeRealAPI MAIN]proxy should be a socks proxy,http proxy will cause redirection issues');
+        process.exit(1);
+    }
     apiProxy = new SocksProxyAgent(process.env.proxy);
 }
 
@@ -147,7 +148,7 @@ setTimeout(async () => {
                 push_uuid: ChatUUID,
                 prompt: GetDefaultPrompt
             }, ReqJson)
-            res.writeHead(200, { "content-type": "application/json" ,"access-control-allow-origin":"*"});
+            res.writeHead(200, { "content-type": "application/json", "access-control-allow-origin": "*" });
             await new Promise((resolve, reject) => {
                 let content = "..."
                 CozeResponse.addMessageListener(ChatUUID, (data) => {
@@ -180,7 +181,4 @@ process.on('uncaughtException', (err) => {
     console.log("异常退出，已清除旧开发环境Token，尝试重新执行...")
     temp.clear()
     process.exit(0)
-})
-process.on('SIGINT', () => {
-    console.log("⎛⎝≥⏝⏝≤⎛⎝⎛⎝≥⏝⏝≤⎛⎝⎛⎝≥⏝⏝≤⎛⎝⎛⎝≥⏝⏝≤⎛⎝⎛⎝≥⏝⏝≤⎛⎝")
 })
