@@ -7,7 +7,7 @@ import Crypto from 'crypto';
 import { stdout } from 'single-line-log';
 import setUpDev from './src/setUpDev.js';
 import CozeWebsocketGuard from './src/CozeWebsocketGuard.js';
-import tempEnvVar from './src/tempEnvVar.js';
+import tempEnvVar from './src/TempEnv.js';
 import PostNewChat from './src/PostNewChat.js';
 import http from 'http';
 import { URL } from 'url';
@@ -24,6 +24,7 @@ const rlasync = async (q) => {
     })
 }
 
+const asleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 
 const md5 = Crypto.createHash('md5');
@@ -32,23 +33,40 @@ const temp = new tempEnvVar();
 
 dotenv.config()
 if (!process.env.session_id) {
-    console.error('[CozeRealAPI MAIN]session_id is not set in .env file,add it and try again');
+    console.error('[CozeRealAPI MAIN]未能在.env或环境变量中找到session_id,请检查.env文件或环境变量');
     process.exit(1);
 }
 let apiProxy = null;
 if (!!process.env.proxy) {
     if (!process.env.proxy.startsWith('socks')) {
-        console.error('[CozeRealAPI MAIN]proxy should be a socks proxy,http proxy will cause redirection issues');
+        console.error('[CozeRealAPI MAIN]代理必须为SOCKS型，使用HTTP代理会出现重复重定向问题');
         process.exit(1);
     }
     apiProxy = new SocksProxyAgent(process.env.proxy);
+} else {
+    console.log('[CozeRealAPI MAIN]未找到代理，将以直连方式访问Coze API，请确保服务器IP不在Coze的区域黑名单中');
 }
+
+//检查是否存在config.json
+if (!fs.existsSync('./config.json')) {
+    console.error('[CozeRealAPI MAIN]未能找到config.json，前往https://github.com/CrazyCreativeDream/Real-Coze-API 查看如何配置config.json');
+    process.exit(1);
+}
+
+const BotConfig = JSON.parse(fs.readFileSync('./config.json'));
+const ChatHistory = JSON.parse(BotConfig.work_info.message_info)
+delete BotConfig.work_info.message_info
 
 const cookies = `sessionid=${process.env.session_id}`;
 
 let setEnvData = temp.get('devEnv');
 if (!setEnvData) {
+    console.log('[CozeRealAPI MAIN]未找到开发环境Token，正在尝试获取...');
     setEnvData = await setUpDev(cookies, apiProxy);
+    if (!setEnvData.success) {
+        console.error('[CozeRealAPI MAIN]获取开发环境Token失败，错误信息：' + setEnvData.data.message);
+        process.exit(1);
+    }
     temp.set('devEnv', setEnvData);
 }
 
@@ -64,44 +82,34 @@ const GnerateUUID = () => {
     });
 }
 
+BotConfig.device_id = randomDeviceID.toString()
 
 const CozeResponseUrl = new URL(`${setEnvData.data.domain}/ws/v2?device_platform=web&version_code=10000&access_key=${GenerateAccessKey}&fpid=${setEnvData.data.product_id}&aid=${setEnvData.data.app_id}&device_id=${randomDeviceID}&xsack=0&xaack=0&xsqos=0&qos_sdk_version=2&language=zh-CN`)
 
-
-
-let GetDefaultPrompt = ""
-//如果存在./prompt.txt则使用./prompt.txt作为默认prompt
-if (fs.existsSync('./prompt.txt')) GetDefaultPrompt = fs.readFileSync('./prompt.txt').toString()
 
 const CozeResponse = new CozeWebsocketGuard(CozeResponseUrl.toString());
 
 setTimeout(async () => {
     const action = process.argv[2]
     if (action === "command") {
-        const ChatHistory = [
-            {
-                "role": 2,
-                "content": "atri，你认得我吗"
-            },
-            {
-                "role": 1,
-                "content": "夏生先生！当然认得了！有什么事吗？"
-            }
-        ]
         while (true) {
+            if(!CozeResponse.ready){
+                console.log("[CozeRealAPI MAIN]正在等待Coze WebSocket连接...")
+                await asleep(1000)
+                continue
+            }
             const ChatContent = await rlasync('Me> ')
             const ChatUUID = GnerateUUID()
             ChatHistory.push({
                 "role": 2,
                 "content": ChatContent
             })
-            await PostNewChat(cookies, apiProxy, {
-                space_id: process.env.space_id,
-                bot_id: process.env.bot_id,
-                device_id: randomDeviceID,
-                push_uuid: ChatUUID,
-                prompt: GetDefaultPrompt
-            }, ChatHistory)
+            await PostNewChat(
+                cookies,
+                apiProxy,
+                Object.assign({}, BotConfig, { "push_uuid": ChatUUID }),
+                ChatHistory
+            )
             await new Promise((resolve, reject) => {
                 let content = "..."
                 stdout(`ATRI> ${content}`)
@@ -141,13 +149,12 @@ setTimeout(async () => {
             const ChatUUID = GnerateUUID()
             const searchParams = new URL(req.url, "http://localhost").searchParams
             const StreamBody = searchParams.get("stream") === "true"
-            await PostNewChat(cookies, apiProxy, {
-                space_id: process.env.space_id,
-                bot_id: process.env.bot_id,
-                device_id: randomDeviceID,
-                push_uuid: ChatUUID,
-                prompt: GetDefaultPrompt
-            }, ReqJson)
+            await PostNewChat(
+                cookies,
+                apiProxy,
+                Object.assign({}, BotConfig, { "push_uuid": ChatUUID }),
+                ChatHistory.concat(ReqJson)
+            )
             res.writeHead(200, { "content-type": "application/json", "access-control-allow-origin": "*" });
             await new Promise((resolve, reject) => {
                 let content = "..."
@@ -163,9 +170,6 @@ setTimeout(async () => {
                     }
                 })
             })
-
-
-
         }).listen(sport)
     }
 }, 1000);

@@ -8,11 +8,9 @@
 
 通过Coze原有PlayGround的API，逆向前端脚本，模拟请求，以实现将Coze的API暴露出来的功能。
 
-与[deanxv/coze-discord-proxy](https://github.com/deanxv/coze-discord-proxy)原理完全不同的是，本项目的接口是直接模拟前端请求API访问Bot，访问策略更接近原生。
+与[deanxv/coze-discord-proxy](https://github.com/deanxv/coze-discord-proxy)原理完全不同的是，本项目的接口是直接模拟前端请求API访问Bot，访问策略更接近原生，项目支持原有的`workflow`和`plugin`功能。
 
 > 说白了就是双机器人策略不太优雅，不如直接调用api访问。
->
-> 该项目也不会做其他的非LLM有关的的功能，未来开发方向用于完善原有的`workflow`和`plugin`功能，以及在`vercel`等无服务器平台部署
 > 
 > 如果你想用其他类似文生图之类的功能可以用CozeDiscordProxy，该项目并非开箱可用。
 
@@ -26,21 +24,32 @@
 
 先将`.env.example`重命名为`.env`。
 
-### 变量获取
+### SessionID变量获取
 
-登录Coze的机器人页面，你会发现URL中已经包含了`SPACE_ID`和`BOT_ID`。
-
-```url
-https://www.coze.com/space/{SPACE_ID}/bot/{BOT_ID}
-```
-
-在当前界面打开F12控制台，切换`Application`选项卡，找到`Cookies`，找到`sessionid`，复制其value。这就是你的`SESSION_ID`。
+登录Coze，在当前界面打开F12控制台，切换`Application`选项卡，找到`Cookies`，找到`sessionid`，复制其value。这就是你的`SESSION_ID`。
 
 > 什么？为什么不直接用`document.cookie`获取？因为Coze把`SessionID`放在了`.coze.com`域名下，而在`www.coze.com`下是无法通过js获取的。
 >
 > `SessionID`默认过期时长为60天，未测试实际时长。
 
-将`SPACE_ID`、`BOT_ID`和`SESSION_ID`填入`.env`文件即可。
+将`SESSION_ID`填入`.env`文件即可。
+
+### `config.json`配置
+
+该文件是有关机器人的所有配置，其中包含了预设和机器人的基本信息。
+
+可以尝试安装项目中的`DownloadBotConfig.userscript.js`油猴脚本，或者直接复制脚本到F12控制台中。
+
+打开机器人的配置页面，url应该类似`https://www.coze.com/space/xxx/bot/xxx`。
+
+脚本会在右上角新增一个`Download`的按钮，点击后会下载一个`config.json`文件，将其复制到项目根目录下即可。
+
+### 安装依赖
+
+```bash
+npm install
+```
+
 
 ### 运行
 
@@ -147,6 +156,3 @@ await fetch("/?stream=true", {
 > 
 > 代理只会处理CozeAPI的请求，不会代理CozeWebsocket的请求。
 
-## 预设
-
-修改根目录下`prompt.txt`即可修改预设，默认文本来自[Abudu](https://github.com/am-abudu)的Atri - 亚托莉预设

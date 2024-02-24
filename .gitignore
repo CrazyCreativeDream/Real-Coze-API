@@ -1,3 +1,5 @@
 .env
 temp/
+config.json
+test.js
 node_modules/
