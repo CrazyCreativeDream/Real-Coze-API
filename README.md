@@ -38,11 +38,14 @@
 
 该文件是有关机器人的所有配置，其中包含了预设和机器人的基本信息。
 
-可以尝试安装项目中的`DownloadBotConfig.userscript.js`油猴脚本，或者直接复制脚本到F12控制台中。
+可以尝试安装项目中的[`DownloadBotConfig.user.js`](https://raw.githubusercontent.com/CrazyCreativeDream/Real-Coze-API/main/DownloadBotConfig.userscript.js)油猴脚本，或者直接复制脚本到F12控制台中。
 
 打开机器人的配置页面，url应该类似`https://www.coze.com/space/xxx/bot/xxx`。
 
-脚本会在右上角新增一个`Download`的按钮，点击后会下载一个`config.json`文件，将其复制到项目根目录下即可。
+脚本会在右上角新增一个`Download`的按钮（没显示就刷新一下），点击后会下载一个`config.json`文件，将其复制到项目根目录下即可。
+
+![image](https://github.com/CrazyCreativeDream/Real-Coze-API/assets/53730587/7c0a47b2-59ba-423d-95cf-b9a777f23ae5)
+
 
 ### 安装依赖
 
