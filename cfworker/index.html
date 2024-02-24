@@ -66,8 +66,7 @@
         }
     }
 
-    const BackendAPI = new URL(window.location.href)
-    BackendAPI = BackendAPI.url.replace(/^https:/, "wss:")
+    const BackendAPI = window.location.href.replace(/^https:/, "wss:")
     const RealCozeAPI = new RealCozeAPIClient(BackendAPI)
     document.getElementById("ChatSend").addEventListener("click", () => {
         const $H = document.getElementById("ChatHistory")
