@@ -165,7 +165,20 @@ await fetch("/?stream=true", {
 
 # 常见问题
 
-## regional restrictions
+## 限制
+
+```
+Regarding message limits, currently the message limits on Coze are:
+GPT-4 (8K)：100 interactions/user/day
+GPT-4 (128K)：50 interactions/user/day
+GPT-3.5 (16K) : 500 interactions/user/day
+```
+
+> 但这是Coze对**机器人**的限制，由于本项目伪造了DeviceID和AccessKey，就目前测试下来暂时没有明确的限制。（不保证能够突破限制）
+>
+> 此外，通过RealCozeAPI发送的消息不会被计入Coze请求统计。
+
+## 报错：regional restrictions
 
 `Coze.com`默认屏蔽来自中国大陆的访问，你需要在`.env`文件中设置`proxy`变量来使用代理。
 
