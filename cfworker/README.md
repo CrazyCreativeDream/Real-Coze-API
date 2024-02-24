@@ -34,9 +34,9 @@
 
 ![image](https://github.com/CrazyCreativeDream/Real-Coze-API/assets/53730587/e660cff3-dc8a-48be-8526-e9e72a852be3)
 
-返回应用程序，选择`设置`-`变量`-`环境变量`将`SESSION_ID`复制到其中，保存并部署。
+返回应用程序，选择`设置`-`变量`-`环境变量`将`SESSION_ID`复制到其中（加密可选），**保存并部署**。
 
-![image](https://github.com/CrazyCreativeDream/Real-Coze-API/assets/53730587/f6490406-a5ed-400e-b00b-6ab4f7733a20)
+![image](https://github.com/CrazyCreativeDream/Real-Coze-API/assets/53730587/c37537d8-df44-4187-b3a7-be767766497a)
 
 下滑，绑定KV。其中KV变量名称必须为`KV`，KV命名空间为**先前存储了`BOT_CONFIG`的存储桶**，**保存并部署**
 
@@ -156,3 +156,5 @@ DemoChat.send("你好！Atri！",console.log)
 输出应该如下所示：
 
 ![image](https://github.com/CrazyCreativeDream/Real-Coze-API/assets/53730587/1907dc71-7453-4ba7-839f-96b5041c637b)
+
+> 该Demo会将聊天记录保存在`this.ChatHistory`中，发送的消息和Coze返回的消息均会自动保存。
