@@ -2,10 +2,7 @@ import fs from 'fs';
 
 export default function tempEnvVar() {
     if (!fs.existsSync('./temp')) fs.mkdirSync('./temp');
-    if (!fs.existsSync('./temp/env.json')) {
-        fs.writeFileSync('./temp/env.json', '{}');
-        return {};
-    }
+    if (!fs.existsSync('./temp/env.json')) fs.writeFileSync('./temp/env.json', '{}');
     this.data = JSON.parse(fs.readFileSync('./temp/env.json'));
     this.set = function (key, value) {
         this.data[key] = value;

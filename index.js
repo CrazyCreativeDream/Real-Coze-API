@@ -66,8 +66,12 @@ if (!setEnvData) {
     if (!setEnvData.success) {
         console.error('[CozeRealAPI MAIN]获取开发环境Token失败，错误信息：' + setEnvData.data.message);
         process.exit(1);
+    }else{
+        console.log('[CozeRealAPI MAIN]获取开发环境Token成功');
     }
     temp.set('devEnv', setEnvData);
+} else {
+    console.log('[CozeRealAPI MAIN]复用原有的开发环境Token（如出现问题请删除./temp文件夹）');
 }
 
 
@@ -93,7 +97,7 @@ setTimeout(async () => {
     const action = process.argv[2]
     if (action === "command") {
         while (true) {
-            if(!CozeResponse.ready){
+            if (!CozeResponse.ready) {
                 console.log("[CozeRealAPI MAIN]正在等待Coze WebSocket连接...")
                 await asleep(1000)
                 continue
@@ -109,7 +113,9 @@ setTimeout(async () => {
                 apiProxy,
                 Object.assign({}, BotConfig, { "push_uuid": ChatUUID }),
                 ChatHistory
-            )
+            ).then((res) => {
+                if (!res.success) console.log("[CozeRealAPI MAIN]发送消息失败，错误信息：" + res.data)
+            })
             await new Promise((resolve, reject) => {
                 let content = "..."
                 stdout(`ATRI> ${content}`)
@@ -154,7 +160,9 @@ setTimeout(async () => {
                 apiProxy,
                 Object.assign({}, BotConfig, { "push_uuid": ChatUUID }),
                 ChatHistory.concat(ReqJson)
-            )
+            ).then((res) => {
+                if (!res.success) console.log("[CozeRealAPI MAIN]发送消息失败，错误信息：" + res.data)
+            })
             res.writeHead(200, { "content-type": "application/json", "access-control-allow-origin": "*" });
             await new Promise((resolve, reject) => {
                 let content = "..."

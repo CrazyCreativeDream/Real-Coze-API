@@ -17,7 +17,8 @@ export default async function PostNewChat(cookies, agent, config, chat) {
         .then(data => {
 
             return {
-                success: data.code === 0
+                success: data.code === 0,
+                data: data.msg
             }
         })
 }

@@ -12,9 +12,13 @@
 
 > 说白了就是双机器人策略不太优雅，不如直接调用api访问。
 > 
-> 如果你想用其他类似文生图之类的功能可以用CozeDiscordProxy，该项目并非开箱可用。
+> 如果你想用其他类似文生图之类的功能可以用CozeDiscordProxy。
 
-> 当前没写Vercel版本的，得咕一下
+> ~~当前没写Vercel版本的，得咕一下~~ 暂时不会再考虑无服务器版本，由于Coze Websocket有并发限制（针对DeviceID），并且vercel免费版有10秒时间限制，往往Coze还没回复完就超时了。
+>
+> 当然也可以用用cache缓存回答并新开一个请求延长时间，但此类骚操作仍存在大量问题。
+
+
 > 
 > 花了一下午逆向前端，我不得不吐槽coze前端水平写的真的依托答辩，我故意保留了部分Coze的前端代码，好让其他人意识到这是来自Coze的API（逃
 >
@@ -22,7 +26,7 @@
 
 ## 使用方法
 
-先将`.env.example`重命名为`.env`。
+先将`.example.env`重命名为`.env`。
 
 ### SessionID变量获取
 
@@ -159,3 +163,10 @@ await fetch("/?stream=true", {
 > 
 > 代理只会处理CozeAPI的请求，不会代理CozeWebsocket的请求。
 
+# 常见问题
+
+## regional restrictions
+
+`Coze.com`默认屏蔽来自中国大陆的访问，你需要在`.env`文件中设置`proxy`变量来使用代理。
+
+> 但是Coze机器人WebSocket暂时没有限制地区，所以程序默认只为API请求设置代理。
