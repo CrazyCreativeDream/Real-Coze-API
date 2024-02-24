@@ -184,3 +184,13 @@ GPT-3.5 (16K) : 500 interactions/user/day
 `Coze.com`默认屏蔽来自中国大陆的访问，你需要在`.env`文件中设置`proxy`变量来使用代理。
 
 > 但是Coze机器人WebSocket暂时没有限制地区，所以程序默认只为API请求设置代理。
+
+## 关于聊天记录中`role`
+
+- `1`为机器人Assistant
+- `2`为用户User
+- `6`为知识库Knowledge
+
+> 可能0为系统system身份，但是你可以直接在网页中预设里设置，不需要在ChatHistory中设置。
+>
+> `ChatHistory`最后一项的`role`最好是`2`用户，否则会出现奇怪的问题。
