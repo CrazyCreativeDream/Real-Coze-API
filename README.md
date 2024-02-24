@@ -14,11 +14,6 @@
 > 
 > 如果你想用其他类似文生图之类的功能可以用CozeDiscordProxy。
 
-> ~~当前没写Vercel版本的，得咕一下~~ 暂时不会再考虑无服务器版本，由于Coze Websocket有并发限制（针对DeviceID），并且vercel免费版有10秒时间限制，往往Coze还没回复完就超时了。
->
-> 当然也可以用用cache缓存回答并新开一个请求延长时间，但此类骚操作仍存在大量问题。
-
-
 > 
 > 花了一下午逆向前端，我不得不吐槽coze前端水平写的真的依托答辩，我故意保留了部分Coze的前端代码，好让其他人意识到这是来自Coze的API（逃
 >
@@ -26,9 +21,15 @@
 
 ## 使用方法
 
+### 部署到CloudFlareWorker
+
+> 参照[`如何部署到CloudFlare`](https://github.com/CrazyCreativeDream/Real-Coze-API/blob/main/cfworker/README.md)
+
+### 以Node形式部署到服务器
+
 先将`.example.env`重命名为`.env`。
 
-### SessionID变量获取
+#### SessionID变量获取
 
 登录Coze，在当前界面打开F12控制台，切换`Application`选项卡，找到`Cookies`，找到`sessionid`，复制其value。这就是你的`SESSION_ID`。
 
@@ -38,7 +39,7 @@
 
 将`SESSION_ID`填入`.env`文件即可。
 
-### `config.json`配置
+#### `config.json`配置
 
 该文件是有关机器人的所有配置，其中包含了预设和机器人的基本信息。
 
@@ -51,7 +52,7 @@
 ![image](https://github.com/CrazyCreativeDream/Real-Coze-API/assets/53730587/7c0a47b2-59ba-423d-95cf-b9a777f23ae5)
 
 
-### 安装依赖
+#### 安装依赖
 
 ```bash
 npm install
@@ -174,9 +175,9 @@ GPT-4 (128K)：50 interactions/user/day
 GPT-3.5 (16K) : 500 interactions/user/day
 ```
 
-> 但这是Coze对**机器人**的限制，由于本项目伪造了DeviceID和AccessKey，就目前测试下来暂时没有明确的限制。（不保证能够突破限制）
+> 但这是Coze对**机器人**的限制。按照目前的测试结果，通过伪造DeviceID和AccessKey，已远远超出GPT-4 128K单用户限制50次/天的限制，**但尚未测试具体限制，切勿滥用！**
 >
-> 此外，通过RealCozeAPI发送的消息不会被计入Coze请求统计。
+> 由于本项目是基于Playground API，通过RealCozeAPI发送的消息不会被计入Coze请求统计。
 
 ## 报错：regional restrictions
 
