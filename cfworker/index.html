@@ -30,6 +30,10 @@
         this.mainListener = (data) => {
             if (!data.success && data.errmsg.match(/regional restrictions/)) {
                 try { this.ws.close() } catch (e) { }
+                Object.keys(this.callbacks).forEach((uuid) => {
+                    this.callbacks[uuid]({ content: "Worker节点出现了异常，请重试...", continue: false })
+                    delete this.callbacks[uuid]
+                })
                 //触发了Worker诡异的出口问题，等待一秒后重连
                 setTimeout(() => {
                     const that = {}
