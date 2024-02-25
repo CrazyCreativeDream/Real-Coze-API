@@ -10,22 +10,85 @@
 
 与[deanxv/coze-discord-proxy](https://github.com/deanxv/coze-discord-proxy)原理完全不同的是，本项目的接口是直接模拟前端请求API访问Bot，访问策略更接近原生，项目支持原有的`workflow`和`plugin`功能。
 
-> 说白了就是双机器人策略不太优雅，不如直接调用api访问。
-> 
-> 如果你想用其他类似文生图之类的功能可以用CozeDiscordProxy。
-
-> 
-> 花了一下午逆向前端，我不得不吐槽coze前端水平写的真的依托答辩，我故意保留了部分Coze的前端代码，好让其他人意识到这是来自Coze的API（逃
->
-> 前端逆向了`GenerateAccessKeybyUUID`和`randomDeviceID`两个主要函数。
+| 项目 | RealCozeAPI | coze-discord-proxy |
+| --- | --- | --- |
+| 模拟方式 | 模拟前端请求API | 通过控制两个Discord机器人互相模拟聊天 |
+| 直接与Coze交互 | ✅ | ❌ |
+| 总调用限制 | ❓没有明确限制 | ❌根据单用户和模型限制 |
+| 开箱即用 | ❌仅提供NodeJS API | ✅ |
+| 支持插件和工作流 | ✅ | ✅ |
+| 对话隔离 | ✅ | ✅ |
+| 伪造对话历史 | ✅ | ❌ |
+| 获取非用户与机器人的对话（包含插件自动生成的Knowledge和Search摘要） | ❓（待做） | ❌ |
 
 ## 使用方法
 
-### 部署到CloudFlareWorker
+### NodeJS API
+
+#### 安装
+
+```bash
+npm i coze-real-api
+```
+
+#### 使用
+
+```javascript
+import RealCozeAPI from "../index.js";
+const Bot = new RealCozeAPI({
+    session: "{SESSION_ID}", //你的SessionID
+    bot: "{BOT_CONFIG}",//机器人配置，JSONObject，可用fs.readFileSync读取
+    tmppath: "./temp",//缓存CozePlayground信息的临时文件夹
+    proxy: null//代理
+}) //构建RealCozeAPI实例
+await Bot.connect() //等待Bot实例连接到Coze的API和WebSocket服务器
+```
+
+> SessionID（`session`）和Botconfig（`bot`）请参见下文获取。
+
+你可以用`Bot`实例的`send`方法来发送消息。`send`默认支持同步`callback`和异步两种模式，你可以同时使用两种模式。
+
+```javascript
+const replay = await Bot.send("你好，Coze！",(data)=>{
+    console.log(data.data)
+})
+console.log(replay)
+```
+
+使用CallBack返回的数据格式如下：
+
+```json
+{
+    "success": true,
+    "data": {
+        "content": "你好，Coze！",
+        "continue": true
+    }
+}
+```
+
+异步则会等待Coze返回完整的回复后返回，返回格式如下：
+
+```json
+{
+    "content": "你好，Coze！",
+    "continue": true
+}
+```
+
+通过bot实例的`disconnect`方法可以断开连接。
+
+```javascript
+Bot.disconnect()
+```
+
+> 你可以参照[`demo/index.js`](https://github.com/CrazyCreativeDream/Real-Coze-API/blob/main/demo/index.js)来查看更多的使用方法。
+
+### 直接使用 - 部署到CloudFlareWorker
 
 > 参照[`如何部署到CloudFlare`](https://github.com/CrazyCreativeDream/Real-Coze-API/blob/main/cfworker/README.md)
 
-### 以Node形式部署到服务器
+### 直接使用 - 以Node Demo形式部署到服务器
 
 先将`.example.env`重命名为`.env`。
 
@@ -59,7 +122,13 @@ npm install
 ```
 
 
-### 运行
+### NodeJSDemo运行
+
+> **严重警告**：Demo是一个极其简陋的程序，极其不推荐部署在生产环境中。请自行使用RealCozeAPI NodeJS API来构建自己的程序。
+>
+> 其中NodeJS API Demo存在[`demo/index.js`](https://raw.githubusercontent.com/CrazyCreativeDream/Real-Coze-API/main/index.js)，另同目录下还有三个html文件简单对应了`websocket`、`server:http`和`server:stream`三种模式的前端写法。
+
+> 非`Command`模式运行均不会保留聊天历史数据，你需要将ChatHistory整个传递到后端。也建议在前端通过编写一个实例来自动维护聊天历史记录。
 
 #### Command模式
 
@@ -72,14 +141,14 @@ npm run command
 ![image](https://github.com/CrazyCreativeDream/Real-Coze-API/assets/53730587/8442f278-f8f1-4dde-8aa3-2fe6ec4ac75b)
 
 
-#### Server模式
+#### HttpServer - 原始HTTP模式
 
 通过Server模式运行，可以通过HTTP请求获取数据。
 
 你可以修改`.env`文件中的`server_port`变量来修改端口。
 
 ```bash
-npm run server
+npm run server:http
 ```
 
 请求方式如下，在http模式下服务端不会保存聊天历史数据，你需要将ChatHistory整个传递到后端：
@@ -113,12 +182,15 @@ await fetch("http://localhost:8080/", {
 }
 ```
 
-
-#### Server - Stream模式
+#### HttpServer - Stream模式
 
 默认情况下，CozeRealAPI程序会等到Coze发送完一整句话的时候才会返回结果。如果你想要实时获取Coze的回复，可以使用Stream模式。
 
-将请求url中的Search参数`stream`设置为`true`，并且使用`ReadableStream`来获取数据。
+以下命令将会启动一个Stream模式的HTTP服务器。
+
+```
+npm run server:stream
+```
 
 > 你也可以偷懒用reader。
 
@@ -153,6 +225,53 @@ await fetch("/?stream=true", {
 
 > listener函数将会在read到一个完整的json后输出，输出结果和非Stream返回结果结构相同。当`continue`为`false`时，`content`内容可能不完整。
 
+#### WebSocket模式
+
+以下命令将会启动一个基于WebSocket的服务器。
+
+```
+npm run server:ws
+```
+
+发送信息格式
+
+```json
+{
+    "uuid": "0936c0b8-d3c8-42b1-b63e-548cfbe25077",
+    "data": [
+        {
+            "role": 2,
+            "content": "Atri，你认得我吗"
+        },
+        {
+            "role": 1,
+            "content": "夏生先生！当然认得了！有什么事吗？夜深了，这么晚还不休息？"
+        },
+        {
+            "role": 2,
+            "content": "Atri，你还记得我刚刚说了什么吗？"
+        }
+    ]
+}
+```
+
+其中`uuid`为随机生成的一串字符，用于程序返回时指定对应的回复消息。
+
+返回信息格式：
+
+```json
+{
+    "uuid": "0936c0b8-d3c8-42b1-b63e-548cfbe25077",
+    "data": {
+        "content": "不好意思，夏生先生，我刚才可能没注意听。您能再说一遍吗？",
+        "continue": false
+    }
+}
+```
+
+`uuid`为先前提交的任务uuid，`data`包含了`content`返回数据和`continue`是否还在更新。
+
+> [`demo/websocket.html`](https://raw.githubusercontent.com/CrazyCreativeDream/Real-Coze-API/main/websocket.html)提供了一个简单的 RealCozeAPIClient，可以参考其使用方法完善你的程序。
 
 ## 代理
 

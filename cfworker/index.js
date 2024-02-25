@@ -13,7 +13,7 @@ const handleRequest = async (request) => {
     const upgradeHeader = request.headers.get('Upgrade');
     if (!upgradeHeader || upgradeHeader !== 'websocket') {
         //return new Response('Expected Upgrade: websocket', { status: 426 });
-        return new Response(await fetch('https://raw.githubusercontent.com/CrazyCreativeDream/Real-Coze-API/main/cfworker/index.html').then(res => res.text()), {
+        return new Response(await fetch('https://raw.githubusercontent.com/CrazyCreativeDream/Real-Coze-API/main/demo/websocket.html').then(res => res.text()), {
             headers: {
                 "content-type": "text/html; charset=utf-8"
             }

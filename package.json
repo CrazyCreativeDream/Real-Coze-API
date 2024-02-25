@@ -5,8 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "command": "node ./index.js command",
-    "server": "node ./index.js server"
+    "command": "node ./demo/index.js command",
+    "server:http": "node ./demo/index.js http",
+    "server:ws": "node ./demo/index.js websocket",
+    "server:stream": "node ./demo/index.js http-stream"
   },
   "author": "",
   "license": "ISC",

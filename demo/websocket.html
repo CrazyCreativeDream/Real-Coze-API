@@ -56,7 +56,7 @@
             }
         }
         this.send = (content, callback) => {
-            this.ChatHistory.push({ role: 1, content })
+            this.ChatHistory.push({ role: 2, content })
             const uuid = this.GnerateUUID()
             this.addChatListener(uuid, callback)
             this.ws.send(JSON.stringify({
@@ -67,6 +67,7 @@
     }
 
     const BackendAPI = window.location.href.replace(/^https:/, "wss:")
+    //const BackendAPI = "ws://127.0.0.1:8080"
     const RealCozeAPI = new RealCozeAPIClient(BackendAPI)
     document.getElementById("ChatSend").addEventListener("click", () => {
         const $H = document.getElementById("ChatHistory")

@@ -44,51 +44,13 @@
 
 ## 使用
 
-Worker版本的RealCozeAPI只接受WebSocket形式
+Worker版本的RealCozeAPI只接受WebSocket形式，不支持HTTP获取，请查阅[`项目首页README`](https://github.com/CrazyCreativeDream/Real-Coze-API)。
 
 > 为什么不支持其他形式？因为如果用传统的HTTP或者Body Stream都会直接超时，Worker免费版本对运算时间只限制500ms，Worker无法等待CozeAPI传输信息。
 >
 > 而Coze本身回调为WebSocket，通过Worker中继使得Coze能够主动触发Worker计算绕过时间限制。
 
-发送信息格式、
-
-```json
-{
-    "uuid": "0936c0b8-d3c8-42b1-b63e-548cfbe25077",
-    "data": [
-        {
-            "role": 2,
-            "content": "Atri，你认得我吗"
-        },
-        {
-            "role": 1,
-            "content": "夏生先生！当然认得了！有什么事吗？夜深了，这么晚还不休息？"
-        },
-        {
-            "role": 2,
-            "content": "Atri，你还记得我刚刚说了什么吗？"
-        }
-    ]
-}
-```
-
-其中`uuid`为随机生成的一串字符，用于程序返回时指定对应的回复消息。
-
-返回信息格式：
-
-```json
-{
-    "uuid": "0936c0b8-d3c8-42b1-b63e-548cfbe25077",
-    "data": {
-        "content": "不好意思，夏生先生，我刚才可能没注意听。您能再说一遍吗？",
-        "continue": false
-    }
-}
-```
-
-`uuid`为先前提交的任务uuid，`data`包含了`content`返回数据和`continue`是否还在更新。
-
-以下是一个简易的Demo，可以调用同步调用API并输出信息：
+<!-- 以下是一个简易的Demo，可以调用同步调用API并输出信息：
 
 ```javascript
 function RealCozeAPIClient(url) {
@@ -162,4 +124,4 @@ DemoChat.send("你好！Atri！",console.log)
 
 ![image](https://github.com/CrazyCreativeDream/Real-Coze-API/assets/53730587/1907dc71-7453-4ba7-839f-96b5041c637b)
 
-> 该Demo会将聊天记录保存在`this.ChatHistory`中，发送的消息和Coze返回的消息均会自动保存。
+> 该Demo会将聊天记录保存在`this.ChatHistory`中，发送的消息和Coze返回的消息均会自动保存。 -->

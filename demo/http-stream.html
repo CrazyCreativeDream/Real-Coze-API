@@ -1,0 +1,68 @@
+<span id="ChatHistory"></span>
+</br>
+<span><input type="text" id="ChatInput" /><button id="ChatSend">发送</button></span>
+<!-- <script src="https://registry.npmmirror.com/marked/12.0.0/files/marked.min.js"></script> -->
+<script>
+    function RealCozeAPIClient(url) {
+        this.ChatHistory = [
+            {
+                "role": 2,
+                "content": "Atri，你认得我吗"
+            },
+            {
+                "role": 1,
+                "content": "夏生先生！当然认得了！有什么事吗？夜深了，这么晚还不休息？"
+            }
+        ]
+        this.send = (content, callback) => {
+            this.ChatHistory.push({ role: 2, content })
+            const listener = callback
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json;charset=utf-8"
+                },
+                body: JSON.stringify(this.ChatHistory)
+            }).then(async (response) => {
+                const reader = response.body.getReader();
+                let { value: chunk, done: readerDone } = await reader.read();
+                let textDecoder = new TextDecoder();
+                let chunks = chunk ? [chunk] : [];
+                while (!readerDone) {
+                    let strChunk = textDecoder.decode(chunk, { stream: true });
+                    if (strChunk.endsWith('}')) {
+                        let parts = strChunk.split('}');
+                        for (let i = 0; i < parts.length - 1; i++) listener(JSON.parse(parts[i] + '}'));
+                    }
+                    chunks.push(chunk);
+                    ({ value: chunk, done: readerDone } = await reader.read());
+                }
+            })
+        }
+    }
+
+    const BackendAPI = window.location.href
+    const RealCozeAPI = new RealCozeAPIClient(BackendAPI)
+    document.getElementById("ChatSend").addEventListener("click", () => {
+        const $H = document.getElementById("ChatHistory")
+        const $B = document.getElementById("ChatSend")
+        const $I = document.getElementById("ChatInput")
+        $B.disabled = true
+        $I.disabled = true
+        const inputContent = $I.value
+        const $me = document.createElement("p")
+        $me.innerText = `Me> ${inputContent}`
+        $H.appendChild($me)
+        const $Atri = document.createElement("span")
+        $H.appendChild($Atri)
+        RealCozeAPI.send(inputContent, (data) => {
+            $Atri.innerText = `Atri> ${data.content}`
+            if (!data.continue) {
+                $B.disabled = false
+                $I.disabled = false
+                $I.value = ""
+            }
+        })
+    })
+
+</script>

@@ -3,20 +3,19 @@ function CozeWebsocketGuard(url) {
     this.ws = new WebSocket(url);
     this.ready = false
     this.ws.on('open', () => {
-        console.log('[CozeRealAPI WebSocket]已连接至CozeWebSocket服务器');
         this.ready = true
     });
     this.ws.on('close', () => {
-        console.log('[CozeRealAPI WebSocket]已断开CozeWebSocket服务器连接');
         this.ready = false
         setTimeout(() => {
             this.ws = new WebSocket(url);
+            this.ws.on('message', this.onMessage);
         }, 3000);
     });
     this.ws.on('error', function error(err) {
         throw err;
     });
-    this.ws.on('message', (data) => {
+    this.onMessage = (data) => {
         const StringData = data.toString()
         const JsonData = JSON.parse(StringData.substring(StringData.indexOf('{'), StringData.lastIndexOf('}') + 1))
         if (JsonData.event_type === 1 && JsonData.message.reply_type === 1) {
@@ -30,10 +29,14 @@ function CozeWebsocketGuard(url) {
                 }
             }
         }
-    });
+    }
+    this.ws.on('message', this.onMessage);
     this.ResponseData = {}
     this.addMessageListener = function (PushUuid, callback) {
         this.ResponseData[PushUuid] = callback
+    }
+    this.removeMessageListener = function (PushUuid) {
+        delete this.ResponseData[PushUuid]
     }
     this.close = function () {
         this.ws.close()

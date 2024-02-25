@@ -3,7 +3,6 @@ import fetch from "node-fetch";
 export default async function PostNewChat(cookies, agent, config, chat) {
     const endpoint = "https://www.coze.com/api/draftbot/execute"
     config.work_info.message_info = JSON.stringify(chat)
-    console.log(config)
     return fetch(endpoint, {
         agent,
         "method": "POST",
