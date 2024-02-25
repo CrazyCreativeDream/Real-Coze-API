@@ -1,12 +1,15 @@
+<div align="center">
+
 # Real-Coze-API
 
-> 高性能的真·Coze API
->
-> **ATRI -My Dear Moments-**
+高性能的真·Coze API
+
+**ATRI -My Dear Moments-**
+</div>
 
 ## 项目原理
 
-通过Coze原有PlayGround的API，逆向前端脚本，模拟请求，以实现将Coze的API暴露出来的功能。
+通过Coze原有PlayGround的API，逆向前端脚本，模拟请求，以实现将Coze的API暴露为NodeJS API。
 
 与[deanxv/coze-discord-proxy](https://github.com/deanxv/coze-discord-proxy)原理完全不同的是，本项目的接口是直接模拟前端请求API访问Bot，访问策略更接近原生，项目支持原有的`workflow`和`plugin`功能。
 
@@ -14,12 +17,18 @@
 | --- | --- | --- |
 | 模拟方式 | 模拟前端请求API | 通过控制两个Discord机器人互相模拟聊天 |
 | 直接与Coze交互 | ✅ | ❌ |
-| 总调用限制 | ❓没有明确限制 | ❌根据单用户和模型限制 |
+| 总调用限制 | ❓没有明确限制（但远超机器人限制） | ❌根据单用户和模型限制 |
 | 开箱即用 | ❌仅提供NodeJS API | ✅ |
 | 支持插件和工作流 | ✅ | ✅ |
 | 对话隔离 | ✅ | ✅ |
 | 伪造对话历史 | ✅ | ❌ |
 | 获取非用户与机器人的对话（包含插件自动生成的Knowledge和Search摘要） | ❓（待做） | ❌ |
+| 上传图片 | ❓（不是特别想做） | ✅ |
+| 生成图片 | ✅（md格式，ciciai的CDN） | ✅ |
+| 流式返回 | ✅（WebSocket与BodyStream） | ✅ |
+| 多机器人 | ✅（通过不同的配置文件指定）| ✅ |
+
+> 目前没有计划写适配openai API的打算。请自行使用RealCozeAPI NodeJS API来构建自己的程序。
 
 ## 使用方法
 
@@ -136,7 +145,7 @@ npm install
 
 > **严重警告**：Demo是一个极其简陋的程序，极其不推荐部署在生产环境中。请自行使用RealCozeAPI NodeJS API来构建自己的程序。
 >
-> 其中NodeJS API Demo存在[`demo/index.js`](https://raw.githubusercontent.com/CrazyCreativeDream/Real-Coze-API/main/index.js)，另同目录下还有三个html文件简单对应了`websocket`、`server:http`和`server:stream`三种模式的前端写法。
+> 其中NodeJS API Demo存在[`demo/index.js`](https://github.com/CrazyCreativeDream/Real-Coze-API/blob/main/demo/index.js)，另同目录下还有三个html文件简单对应了`server:ws`、`server:http`和`server:stream`三种模式的前端写法。
 
 > 非`Command`模式运行均不会保留聊天历史数据，你需要将ChatHistory整个传递到后端。也建议在前端通过编写一个实例来自动维护聊天历史记录。
 
@@ -152,6 +161,8 @@ npm run command
 
 
 #### HttpServer - 原始HTTP模式
+
+> 此方法并非流式
 
 通过Server模式运行，可以通过HTTP请求获取数据。
 
@@ -281,7 +292,7 @@ npm run server:ws
 
 `uuid`为先前提交的任务uuid，`data`包含了`content`返回数据和`continue`是否还在更新。
 
-> [`demo/websocket.html`](https://raw.githubusercontent.com/CrazyCreativeDream/Real-Coze-API/main/websocket.html)提供了一个简单的 RealCozeAPIClient，可以参考其使用方法完善你的程序。
+> [`demo/websocket.html`](https://github.com/CrazyCreativeDream/Real-Coze-API/blob/main/demo/websocket.html)提供了一个简单的 RealCozeAPIClient，可以参考其使用方法完善你的程序。
 
 ## 代理
 

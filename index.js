@@ -56,7 +56,7 @@ function RealCozeAPI(config) {
             
 
             this.access_key = md5.update("".concat(this.CozePlayGroundData.data.product_id).concat(this.CozePlayGroundData.data.app_key).concat(this.device_id, "f8a69f1719916z")).digest('hex');
-
+            //这是Coze混淆前端的一个签名算法
             this.CozeResponse = new CozeWebsocketGuard(`${this.CozePlayGroundData.data.domain}/ws/v2?device_platform=web&version_code=10000&access_key=${this.access_key}&fpid=${this.CozePlayGroundData.data.product_id}&aid=${this.CozePlayGroundData.data.app_id}&device_id=${this.device_id}&xsack=0&xaack=0&xsqos=0&qos_sdk_version=2&language=zh-CN`)
 
             while (!this.CozeResponse.ready) await asleep(300)
