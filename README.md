@@ -28,18 +28,18 @@
 #### 安装
 
 ```bash
-npm i coze-real-api
+npm i real-coze-api
 ```
 
 #### 使用
 
 ```javascript
-import RealCozeAPI from "../index.js";
+import RealCozeAPI from 'real-coze-api';
 const Bot = new RealCozeAPI({
     session: "{SESSION_ID}", //你的SessionID
     bot: "{BOT_CONFIG}",//机器人配置，JSONObject，可用fs.readFileSync读取
     tmppath: "./temp",//缓存CozePlayground信息的临时文件夹
-    proxy: null//代理
+    proxy: "socks5://127.0.0.1:7890"//代理
 }) //构建RealCozeAPI实例
 await Bot.connect() //等待Bot实例连接到Coze的API和WebSocket服务器
 ```
@@ -48,10 +48,20 @@ await Bot.connect() //等待Bot实例连接到Coze的API和WebSocket服务器
 
 你可以用`Bot`实例的`send`方法来发送消息。`send`默认支持同步`callback`和异步两种模式，你可以同时使用两种模式。
 
+> 请注意Send发送的是整个聊天记录。RealCozeAPI会自动将提交的记录和机器人原有的部分记录合并。
+
 ```javascript
-const replay = await Bot.send("你好，Coze！",(data)=>{
-    console.log(data.data)
-})
+const replay = await Bot.send(
+    [
+        {
+            role: 2,
+            content: "你好，Coze！"
+        }
+    ],
+    (data) => {
+        console.log(data.data)
+    }
+)
 console.log(replay)
 ```
 
