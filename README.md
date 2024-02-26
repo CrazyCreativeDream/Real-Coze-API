@@ -113,7 +113,8 @@ Bot.generateChatHistory("你好，Coze！")
 [
     {
         "role": 2,
-        "content": "你好，Coze！"
+        "content": "你好，Coze！",
+        "contentType":1
     }
 ]
 ```
@@ -167,7 +168,7 @@ Coze在机器人生成消息时也会返回其他来自插件生成的消息（�
 Bot.send(Bot.generateChatHistory("你好，Coze！"),console.log,[1,2,3,4,6])
 ```
 
-这将会返回所有的消息，包括机器人**“思考”**的内容。
+这将会返回所有的消息，包括机器人 **“思考”** 的内容。
 
 > 订阅仅对CallBack有效。异步`Bot.send`只会返回机器人最终的消息。
 
