@@ -22,8 +22,8 @@
 | 支持插件和工作流 | ✅ | ✅ |
 | 对话隔离 | ✅ | ✅ |
 | 伪造对话历史 | ✅ | ❌ |
-| 获取非用户与机器人的对话（包含插件自动生成的Knowledge和Search摘要） | ❓（待做） | ❌ |
-| 上传图片 | ❓（不是特别想做） | ✅ |
+| 捕获机器人“思考”内容（包含插件自动生成的Knowledge和Search摘要） | ✅ | ❌ |
+| 上传文件/图片 | ✅ | ✅ |
 | 生成图片 | ✅（md格式，ciciai的CDN） | ✅ |
 | 流式返回 | ✅（WebSocket与BodyStream） | ✅ |
 | 多机器人 | ✅（通过不同的配置文件指定）| ✅ |
@@ -42,6 +42,8 @@ npm i real-coze-api
 
 #### 使用
 
+##### 构建实例
+
 ```javascript
 import RealCozeAPI from 'real-coze-api';
 const Bot = new RealCozeAPI({
@@ -55,9 +57,13 @@ await Bot.connect() //等待Bot实例连接到Coze的API和WebSocket服务器
 
 > SessionID（`session`）和Botconfig（`bot`）请参见下文获取。
 
+##### 发送文本消息
+
 你可以用`Bot`实例的`send`方法来发送消息。`send`默认支持同步`callback`和异步两种模式，你可以同时使用两种模式。
 
 > 请注意Send发送的是整个聊天记录。RealCozeAPI会自动将提交的记录和机器人原有的部分记录合并。
+
+> `Bot.send(ChatHistory,callback,subscribeRole)`方法允许携带三个参数：聊天记录、CallBack和订阅的消息类型。其中`subscribe`为一个数组,表示允许CallBack的类型，默认为`[1]`。
 
 ```javascript
 const replay = await Bot.send(
@@ -94,6 +100,78 @@ console.log(replay)
     "continue": true
 }
 ```
+
+你可以用bot实例自带的`generateChatHistory`方法来快速生成聊天记录。
+    
+```javascript
+Bot.generateChatHistory("你好，Coze！")
+```
+
+这将会返回：
+
+```json
+[
+    {
+        "role": 2,
+        "content": "你好，Coze！"
+    }
+]
+```
+
+你可以用push的方式来添加聊天记录。
+
+```javascript
+ChatHistory.push(...Bot.generateChatHistory("你好，Coze！"))
+```
+
+> `generateChatHistory`方法允许携带三个参数：输入内容、内容类型和`role`
+>
+> 内容类型允许`text`、`image`和`file`三种类型，未指定或使用不允许的类型时默认为`text`。
+>
+> 有关于`role`的更多信息请参见READEME底部常见问题。默认为`2`用户。
+> 
+> 方法只会返回生成的聊天记录，不会合并到原有的聊天记录中。请自行合并。
+
+##### 上传图片
+
+首先你需要将图片上传到Coze，Bot实例提供了`uploadFile`方法来上传文件/图片，建议使用内置的`generateChatHistory`方法来生成聊天记录。
+
+> 你也可以手动生成一个`contentType`为`6`的聊天记录。但是我们仍然建议使用内置的方法来生成聊天记录。
+
+```javascript
+//文件 文件后缀名
+const key = await Bot.uploadFile(fs.readFileSync("test.jpg"), ".jpg").then(res=>res.data)
+```
+
+这将返回一个类似`tos-alisg-i-xxx-sg/xxxxx.jpg`的文本，这是存储在Coze S3存储桶里的图片地址。
+
+待上传图片后，我们建议使用`generateChatHistory`方法来生成聊天记录。
+
+```javascript
+Bot.generateChatHistory(key,"image")
+```
+
+##### 上传文件
+
+与上传图片相同，但聊天记录中的`contentType`应当为`9`。我们仍然建议用内置的`generateChatHistory`方法来生成聊天记录。
+
+```javascript
+Bot.generateChatHistory(key,"file")
+```
+
+##### 订阅非机器人生成的消息（返回“思考”内容）
+
+Coze在机器人生成消息时也会返回其他来自插件生成的消息（如KnowLedge生成的内容摘要，搜索插件总结的问题和返回的结果），但RealCozeAPI默认只允许`role`为`1`（即机器人最终返回的消息）。在Bot的`send`方法中，你可以通过指定第三个`subscribe`参数来订阅非机器人生成的消息。
+
+```javascript
+Bot.send(Bot.generateChatHistory("你好，Coze！"),console.log,[1,2,3,4,6])
+```
+
+这将会返回所有的消息，包括机器人**“思考”**的内容。
+
+> 订阅仅对CallBack有效。异步`Bot.send`只会返回机器人最终的消息。
+
+##### 断开连接
 
 通过bot实例的`disconnect`方法可以断开连接。
 
@@ -325,10 +403,12 @@ GPT-3.5 (16K) : 500 interactions/user/day
 
 > 但是Coze机器人WebSocket暂时没有限制地区，所以程序默认只为API请求设置代理。
 
-## 关于聊天记录中`role`
+## 关于聊天记录和订阅中`role`
 
 - `1`为机器人Assistant
 - `2`为用户User
+- `3`为插件生成的问题摘要
+- `4`为插件返回的回答摘要
 - `6`为知识库Knowledge
 
 > 可能0为系统system身份，但是你可以直接在网页中预设里设置，不需要在ChatHistory中设置。

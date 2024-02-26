@@ -1,6 +1,6 @@
 {
   "name": "real-coze-api",
-  "version": "0.0.2",
+  "version": "0.0.3-beta2",
   "description": "Coze Playground API",
   "main": "index.js",
   "type": "module",
@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "crc-32": "^1.2.2",
     "dotenv": "^16.4.5",
     "node-fetch": "^3.3.2",
     "single-line-log": "^1.1.2",

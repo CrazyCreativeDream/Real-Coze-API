@@ -1,10 +1,11 @@
-import process from 'process';
 import { SocksProxyAgent } from 'socks-proxy-agent';
 import Crypto from 'crypto';
 import setUpDev from './src/setUpDev.js';
 import CozeWebsocketGuard from './src/CozeWebsocketGuard.js';
 import PostNewChat from './src/PostNewChat.js';
 import TempDataGuard from './src/TempDataGuard.js';
+import getUploadAuth from './src/getUploadAuth.js';
+import UploadFile from './src/UploadFile.js';
 const md5 = Crypto.createHash('md5');
 const asleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 const GnerateUUID = () => {
@@ -40,20 +41,19 @@ function RealCozeAPI(config) {
     const cookies = `sessionid=${config.session}`;
     this.device_id = Math.abs(Date.now() ^ 268435456 * Math.random())
     this.BotConfig.device_id = this.device_id.toString()
-
+    const temp = new TempDataGuard(config.tmppath)
 
 
     this.connect = async () => {
         return new Promise(async (resolve, reject) => {
-            const temp = new TempDataGuard(config.tmppath)
             this.CozePlayGroundData = temp.get('PlayGroundData');
-           
+
             if (!this.CozePlayGroundData) {
                 this.CozePlayGroundData = await setUpDev(cookies, config.proxy)
                 if (!this.CozePlayGroundData.success) return handleError(this.CozePlayGroundData.data.message)
                 temp.set('PlayGroundData', this.CozePlayGroundData);
             }
-            
+
 
             this.access_key = md5.update("".concat(this.CozePlayGroundData.data.product_id).concat(this.CozePlayGroundData.data.app_key).concat(this.device_id, "f8a69f1719916z")).digest('hex');
             //这是Coze混淆前端的一个签名算法
@@ -67,22 +67,58 @@ function RealCozeAPI(config) {
     }
     this.disconnect = () => {
         this.CozeResponse.close()
+        delete this.CozeResponse
     }
 
 
 
+    this.generateChatHistory = (InputChatHistory, HistoryType, role) => {
+        role = role || 2
+        switch (HistoryType) {
+            case 'image':
+                return [{
+                    role,
+                    content: JSON.stringify({
+                        image_list: [
+                            {
+                                key: InputChatHistory
+                            }
+                        ]
+                    }),
+                    contentType: 6
+                }]
+            case 'file':
+                return [{
+                    role,
+                    content: JSON.stringify({
+                        file_list: [
+                            {
+                                key: InputChatHistory
+                            }
+                        ]
+                    }),
+                    contentType: 9
+                }]
+            default:
+                return [{
+                    role,
+                    content: InputChatHistory,
+                    contentType: 1
+                }]
+        }
+    }
 
 
-
-    this.send = async (InputChatHistory, callback) => {
+    this.send = async (InputChatHistory, callback, subscribeRole) => {
+        subscribeRole = subscribeRole || [1]
         return new Promise(async (resolve, reject) => {
             const ChatUUID = GnerateUUID()
             this.CozeResponse.addMessageListener(ChatUUID, (data) => {
-                callback({
+                if (subscribeRole.includes(data.reply_type)) callback({
                     success: true,
                     data
                 });
-                if (!data.continue) resolve(data)
+                if (!data.continue && data.reply_type === 1) resolve(data)
             })
             const PostResult = await PostNewChat(
                 cookies,
@@ -100,6 +136,18 @@ function RealCozeAPI(config) {
                 reject(PostResult)
             }
         })
+
+    }
+
+    this.uploadFile = async (file, fileExtension) => {
+
+        let UploadAuth = temp.get('UploadAuthToken');
+        if (!UploadAuth || new Date(UploadAuth.data.auth.expired_time) < Date.now()) {
+            UploadAuth = await getUploadAuth(cookies, config.proxy)
+            if (!UploadAuth.success) return handleError(UploadAuth.data.message)
+            temp.set('UploadAuthToken', UploadAuth);
+        }
+        return UploadFile(cookies, config.proxy, file, fileExtension, UploadAuth.data)
 
     }
 

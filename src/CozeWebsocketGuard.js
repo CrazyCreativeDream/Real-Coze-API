@@ -18,13 +18,14 @@ function CozeWebsocketGuard(url) {
     this.onMessage = (data) => {
         const StringData = data.toString()
         const JsonData = JSON.parse(StringData.substring(StringData.indexOf('{'), StringData.lastIndexOf('}') + 1))
-        if (JsonData.event_type === 1 && JsonData.message.reply_type === 1) {
+        if (JsonData.event_type === 1) {
             if (!!JsonData.message.ext && !!JsonData.message.ext.PushUuid && typeof this.ResponseData[JsonData.message.ext.PushUuid] === 'function') {
                 this.ResponseData[JsonData.message.ext.PushUuid]({
                     content: JsonData.message.content,
-                    continue: JsonData.message.ext.is_finish === "0"
+                    continue: JsonData.message.ext.is_finish === "0",
+                    reply_type: JsonData.message.reply_type
                 })
-                if (JsonData.message.ext.is_finish === "1") {
+                if (JsonData.message.ext.is_finish === "1" && JsonData.message.reply_type === 1) {
                     delete this.ResponseData[JsonData.message.ext.PushUuid]
                 }
             }
