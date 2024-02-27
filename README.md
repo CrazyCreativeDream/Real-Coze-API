@@ -7,6 +7,8 @@
 **ATRI -My Dear Moments-**
 </div>
 
+> **WARN:Coze官方在2024/2/27开启了强制校验url中签名策略，在逆向出签名原理前该项目处于不可用状态。**
+
 ## 项目原理
 
 通过Coze原有PlayGround的API，逆向前端脚本，模拟请求，以实现将Coze的API暴露为NodeJS API。
